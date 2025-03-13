@@ -76,20 +76,38 @@ class ProductController extends Controller
     public function search(Request $request)
     {
         $query = $request->input('query');
+    
         $products = Product::where('name', 'like', "%$query%")
             ->orWhere('category', 'like', "%$query%")
             ->get();
+    
         return response()->json($products);
     }
 
-    public function productsInRayon($rayonId)
+    public function getProductsInRayon($rayonId)
     {
         $rayon = Rayon::find($rayonId);
         if (!$rayon) {
-            return response()->json(['message' => 'Product not found'], 404);
+            return response()->json(['message' => 'Rayon not found'], 404);
         }
 
-        $products = $rayon->products;
+        $products = Product::where('rayon_id', $rayonId)
+            ->where(function ($query) {
+                $query->where('is_promoted', true)
+                    ->orWhere('popularity', '>', 5);
+            })
+            ->get();
+
         return response()->json($products);
+    }
+
+    public function getAlert()
+    {
+        $lowThresholdProducts = Product::where('quantity', '<=', 10)->get(['id', 'name', 'quantity']);
+
+        if($lowThresholdProducts){
+            return response()->json(['message' => 'ATTENTION: These products needs restocking.', $lowThresholdProducts]);
+        }
+        
     }
 }
