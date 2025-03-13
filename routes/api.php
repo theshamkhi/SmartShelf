@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RayonController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\OrderController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -16,8 +17,11 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 
 Route::apiResource('rayons', RayonController::class);
 
+Route::get('/products/search', [ProductController::class, 'search']);
+// apiResource Under Search to avoid conflicts
 Route::apiResource('products', ProductController::class);
 
-Route::get('/products/search', [ProductController::class, 'search']);
+Route::get('/rayons/{rayonId}/products', [ProductController::class, 'getProductsInRayon']);
 
-Route::get('/rayons/{rayonId}/products', [ProductController::class, 'productsInRayon']);
+Route::get('/getStats', [OrderController::class, 'getStats']);
+Route::get('/getAlert', [ProductController::class, 'getAlert']);
