@@ -34,6 +34,7 @@ class AuthController extends Controller
         $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string',
+            'role' => 'required|in:client,admin'
         ]);
 
         if (!Auth::attempt($request->only('email', 'password'))) {
@@ -45,10 +46,18 @@ class AuthController extends Controller
         $user = $request->user();
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'message' => 'Login successful',
-            'token' => $token,
-        ]);
+        if($user->role === 'admin'){
+            return response()->json([
+                'message' => 'Login successful as Admin',
+                'token' => $token,
+            ]);
+        }
+        else{
+            return response()->json([
+                'message' => 'Login successful as Client',
+                'token' => $token,
+            ]);
+        }
     }
 
     public function logout(Request $request)
