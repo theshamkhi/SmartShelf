@@ -13,15 +13,19 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
-Route::apiResource('rayons', RayonController::class);
+Route::middleware('auth:sanctum')->group(function () {
 
-Route::get('/products/search', [ProductController::class, 'search']);
-// apiResource Under Search to avoid conflicts
-Route::apiResource('products', ProductController::class);
+    Route::apiResource('rayons', RayonController::class)->middleware(['role:admin']);
 
-Route::get('/rayons/{rayonId}/products', [ProductController::class, 'getProductsInRayon']);
+    Route::get('/products/search', [ProductController::class, 'search'])->middleware(['role:client']);
+    // apiResource Under Search to avoid conflicts
+    Route::apiResource('products', ProductController::class);
+    
+    Route::get('/rayons/{rayonId}/products', [ProductController::class, 'getProductsInRayon'])->middleware(['role:client']);
+    
+    Route::get('/getStats', [OrderController::class, 'getStats'])->middleware(['role:admin']);
+    Route::get('/getAlert', [ProductController::class, 'getAlert'])->middleware(['role:admin']);
 
-Route::get('/getStats', [OrderController::class, 'getStats']);
-Route::get('/getAlert', [ProductController::class, 'getAlert']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+});
